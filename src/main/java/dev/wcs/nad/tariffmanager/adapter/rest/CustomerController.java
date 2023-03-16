@@ -33,6 +33,17 @@ public class CustomerController {
         }
         return customerDtos;
     }
+    @GetMapping("/api/customersOfLegalAge")
+    public List<CustomerDto> displayCustomersOfLegalAge(@RequestParam(name = "lastname", required = false) String lastname) {
+        List<CustomerDto> customerDtos = new ArrayList<>();
+        Iterable<Customer> relevantCustomers;
+        if (StringUtils.hasText(lastname)) relevantCustomers = customerService.filterOfLegalAgeAndLastname(lastname);
+        else relevantCustomers = customerService.filterOfLegalAgeCustomersInRepository();
+        for (Customer customer: relevantCustomers) {
+            customerDtos.add(entityToDtoMapper.customerToCustomerDto(customer));
+        }
+        return customerDtos;
+    }
 
     @PostMapping("/api/customers")
     public ResponseEntity<CustomerDto> createCustomer(@RequestBody CreateCustomerDto createCustomerDto) {

@@ -21,7 +21,8 @@ public class CustomerService {
     private final AddressRepository addressRepository;
     private final ContactRepository contactRepository;
     // Challenge: Make legalAge configurable
-    private final int legalAge = 18;
+    @Value("${maturity.age.customer}")
+    private int legalAge;
 
     public CustomerService(CustomerRepository customerRepository, AddressRepository addressRepository, ContactRepository contactRepository) {
         this.customerRepository = customerRepository;
@@ -56,17 +57,17 @@ public class CustomerService {
         // We are converting to a Spliterator to be able to iterate over the Iterable which is returned by the Repository
         Spliterator<Customer> customerSpliterator = customerRepository.findAll().spliterator();
         // Challenge: Add a filter for legal Date here, the implementation is in private method "isOfLegalAge"
-        return StreamSupport.stream(customerSpliterator, false).collect(Collectors.toList());
+        return StreamSupport.stream(customerSpliterator, false).filter(customer -> isOfLegalAge(customer)).collect(Collectors.toList());
     }
 
     // Examine the Repository to see if there are methods defined which can be used here.
     public Iterable<Customer> filterOfLegalAgeCustomersInRepository() {
-        return null;
+        return customerRepository.findAllByBirthdateIsBefore(LocalDate.now().minusYears(legalAge));
     }
 
     // Examine the Repository to see if there are methods defined which can be used here.
     public Iterable<Customer> filterOfLegalAgeAndLastname(String lastname) {
-        return null;
+        return customerRepository.findAllByBirthdateIsBeforeAndLastnameContainingIgnoreCase(LocalDate.now().minusYears(legalAge), lastname);
     }
 
     private boolean isOfLegalAge(Customer customers) {
